@@ -13,14 +13,11 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   // Must be unique in an app. Prefix with a 'domain' type
-  static const platform = MethodChannel('samples.flutter.dev/battery');
   static const speechChannel = MethodChannel('samples.flutter.dev/speech');
-  String _batteryLevel = 'Unknown battery level';
+  static const stream = const EventChannel('events.flutter.dev/speech');
   String _sessionStatus = "nuthing";
 
-  static const stream = const EventChannel('events.flutter.dev/speech');
   late StreamSubscription speechEvents;
-
   String _talkText="";
 
   @override
@@ -55,7 +52,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> startSession() async {
-    String sessionStatus;
     await speechChannel.invokeMethod('startSession');
     _talkText = "";
   }
@@ -65,7 +61,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> startStreamSession() async {
-    String sessionStatus;
     await speechChannel.invokeMethod('startStreamSession');
     _talkText = "";
   }
@@ -89,8 +84,8 @@ class _MyHomePageState extends State<MyHomePage> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         Text(_talkText),
-        TextButton(onPressed: startSession, child: const Text("Start Session")),
-        TextButton(onPressed: endSession, child: const Text("End Session")),
+        // TextButton(onPressed: startSession, child: const Text("Start Session")),
+        // TextButton(onPressed: endSession, child: const Text("End Session")),
         TextButton(onPressed: startStreamSession, child: const Text("Start Stream Session")),
         TextButton(onPressed: endStreamSession, child: const Text("End Stream Session")),
         ElevatedButton(

@@ -15,22 +15,21 @@ import io.flutter.plugin.common.MethodCall
 
 class SpeechRecognition : EventChannel.StreamHandler, MethodChannel.MethodCallHandler {
 
-    private var speechConfig: SpeechConfig
-    private var eventSink: EventChannel.EventSink? = null
     private var isSessionStarted = false
     private val subscriptionKey: String = "7e5fdf9fa44440d99940bf7d0af30d55"
     private val region: String = "UKSouth"
+
     private lateinit var recognizer: SpeechRecognizer
+    private var eventSink: EventChannel.EventSink? = null
+    private var speechConfig: SpeechConfig
+
     private var isRecognizerSet = false
-    private var microphoneRecorder: MicrophoneRecorder? = null;
 
     private lateinit var audioRecorder: AudoRecordRecorder;
 
     init {
         speechConfig = SpeechConfig.fromSubscription(subscriptionKey, region)
         speechConfig.speechRecognitionLanguage = "en-GB"
-        // recognizerFromMicrophone(speechConfig)
-        // recognizerEvents()
     }
 
     fun recognizerFromMicrophone(speechConfig: SpeechConfig) {
@@ -38,6 +37,7 @@ class SpeechRecognition : EventChannel.StreamHandler, MethodChannel.MethodCallHa
         recognizer = SpeechRecognizer(speechConfig, audioConfig)
     }
 
+    /// Just the events we are interested, routed to methods
     private fun recognizerEvents() {
         recognizer.sessionStarted.addEventListener { _: Any, _: SessionEventArgs -> sessionStartedEvent() }
         recognizer.sessionStopped.addEventListener { _: Any, e: SessionEventArgs ->
@@ -112,6 +112,7 @@ class SpeechRecognition : EventChannel.StreamHandler, MethodChannel.MethodCallHa
         }
     }
 
+    // MethodChannel Command
     internal fun startSession() {
         eventSink?.let {
             Handler(Looper.getMainLooper()).post {
@@ -123,6 +124,7 @@ class SpeechRecognition : EventChannel.StreamHandler, MethodChannel.MethodCallHa
         recognizer.startContinuousRecognitionAsync()
     }
 
+    // MethodChannel Command
     internal fun sessionEnded() {
         eventSink?.let {
             eventSink!!.success("SessionEnded")
@@ -130,14 +132,12 @@ class SpeechRecognition : EventChannel.StreamHandler, MethodChannel.MethodCallHa
         recognizer.stopContinuousRecognitionAsync()
     }
 
+    // MethodChannel Command
     internal fun startStreamSession() {
         eventSink?.let {
             eventSink!!.success("StreamSessionStart Event")
         }
-        val descriptors = ParcelFileDescriptor.createPipe()
-        val parcelRead = ParcelFileDescriptor(descriptors[0])
-        var parcelWrite = ParcelFileDescriptor(descriptors[1])
-        var inputStream = ParcelFileDescriptor.AutoCloseInputStream(parcelRead)
+
 
 
         var pushStream =
@@ -146,13 +146,12 @@ class SpeechRecognition : EventChannel.StreamHandler, MethodChannel.MethodCallHa
             recognizer = SpeechRecognizer(speechConfig, audioConfig)
             recognizerEvents()
 
-        isRecognizerSet = true
         audioRecorder = AudoRecordRecorder(pushStream)
         audioRecorder.Start()
         recognizer.startContinuousRecognitionAsync()
 
     }
-
+    // MethodChannel Command
     internal fun endStreamSession() {
         eventSink?.let {
             eventSink!!.success("StreamSessionEnded Event")
@@ -163,14 +162,15 @@ class SpeechRecognition : EventChannel.StreamHandler, MethodChannel.MethodCallHa
 
     }
 
+    //Event Channel hook
     override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
         this.eventSink = events
     }
-
+    // Event Channel Hook
     override fun onCancel(arguments: Any?) {
         eventSink = null;
     }
-
+// Method Channel executor
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         var out = when (call.method) {
             "startSession" -> startSession()
@@ -179,7 +179,7 @@ class SpeechRecognition : EventChannel.StreamHandler, MethodChannel.MethodCallHa
             "endStreamSession" -> endStreamSession()
             else -> result.notImplemented()
         }
-
+        // redundnanr
         result.success("Success")
     }
 

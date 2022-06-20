@@ -17,7 +17,6 @@ import java.util.logging.StreamHandler
 
 class MainActivity : FlutterActivity() {
 
-    private val ChannelName = "samples.flutter.dev/battery"
     private val SpeechChannelName = "samples.flutter.dev/speech";
     private val SpeechEventChannelName = "events.flutter.dev/speech";
     private val speechRecog: SpeechRecognition = SpeechRecognition()

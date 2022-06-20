@@ -30,7 +30,7 @@ class AudoRecordRecorder(pushStream: PushAudioInputStream) {
         val sampleRate = 48000;
         val channelConfig = AudioFormat.CHANNEL_IN_MONO;
         val audioFormat = AudioFormat.ENCODING_PCM_16BIT;
-
+        // This must match the settings used the Azure Speech
         val minBufferSize = AudioRecord.getMinBufferSize(sampleRate, channelConfig, audioFormat);
 
         microphone = AudioRecord(
@@ -49,9 +49,12 @@ class AudoRecordRecorder(pushStream: PushAudioInputStream) {
         microphone.startRecording();
 
         //Since audioformat is 16 bit, we need to create a 16 bit (short data type) buffer
+        // Which is annoying....
         val buffer: ShortArray = ShortArray(1024)
-
+// This is a little cowboy.
         Thread {
+            // Need an extra condition for readSize state.
+            // becuase we can be stopped, but still have data in the buffer
             while (!isStopped) {
                 try {
                     var readSize = microphone.read(buffer, 0, buffer.size);
@@ -68,6 +71,7 @@ class AudoRecordRecorder(pushStream: PushAudioInputStream) {
             }
             microphone.stop()
             microphone.release()
+            // Azure SPeech manages the stream
 //            pushS.close()
         }.start()
     }
